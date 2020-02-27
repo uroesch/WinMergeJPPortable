@@ -1,12 +1,14 @@
-$AppRoot        = "$PSScriptRoot\..\..\"
+$AppRoot        = "$PSScriptRoot\..\.."
 $AppInfoIni     = "$AppRoot\App\AppInfo\appinfo.ini"
 $PackageVersion = '2.16.4.13'
 $DisplayVersion = '2.16.4+-jp-13'
 $ZipVersion     = '2.16.4-jp-13'
 $Archive64URL   = "https://dotsrc.dl.osdn.net/osdn/winmerge-jp/72291/winmerge-$ZipVersion-x64-exe.zip"
 $TargetDir64    = 'WinMerge64'
+$ExtractDir64   = 'WinMerge'
 $Archive32URL   = "https://dotsrc.dl.osdn.net/osdn/winmerge-jp/72291/winmerge-$ZipVersion-exe.zip"
 $TargetDir32    = 'WinMerge'
+$ExtractDir32   = 'WinMerge'
 
 Function Url-Basename {
   param(
@@ -31,7 +33,8 @@ Function Download-ZIP {
 Function Update-Zip {
   param(
     [string] $URL,
-    [string] $TargetDir
+    [string] $TargetDir,
+    [string] $ExtractDir
   )
   $ZipFile    = $(Download-ZIP -URL $URL)
   $TargetPath = "$AppRoot\App\$TargetDir"
@@ -40,7 +43,7 @@ Function Update-Zip {
     Write-Output "Removing $TargetPath"
     Remove-Item -Path $TargetPath -Force -Recurse
   }
-  Move-Item -Path $PSScriptRoot\WinMerge -Destination $TargetPath -Force
+  Move-Item -Path $PSScriptRoot\$ExtractDir -Destination $TargetPath -Force
   Remove-Item $ZipFile
 }
 
@@ -56,7 +59,7 @@ Function Update-Appinfo() {
   }
 }
 
-Update-ZIP -URL $Archive64URL -TargetDir $TargetDir64
-Update-ZIP -URL $Archive32URL -TargetDir $TargetDir32
+Update-ZIP -URL $Archive64URL -TargetDir $TargetDir64 -ExtractDir $ExtractDir64
+Update-ZIP -URL $Archive32URL -TargetDir $TargetDir32 -ExtractDir $ExtractDir32
 Update-Appinfo -IniFile $AppInfoIni -Match '^PackageVersion\s*=.*' -Replace "PackageVersion=$PackageVersion"
 Update-Appinfo -IniFile $AppInfoIni -Match '^DisplayVersion\s*=.*' -Replace "DisplayVersion=$DisplayVersion"
