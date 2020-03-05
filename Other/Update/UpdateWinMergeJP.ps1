@@ -1,25 +1,16 @@
 # -----------------------------------------------------------------------------
+# Description: Generic Update Script for PortableApps 
+# Author: Urs Roesch <github@bun.ch>
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Globals 
 # -----------------------------------------------------------------------------
 $AppRoot    = "$PSScriptRoot\..\.."
-$AppInfoIni = "$AppRoot\App\AppInfo\appinfo.ini"
-$UpdateIni  = "$PSScriptRoot\update.ini"
+$AppInfoDir = "$AppRoot\App\AppInfo"
+$AppInfoIni = "$AppInfoDir\appinfo.ini"
+$UpdateIni  = "$AppInfoDir\update.ini"
 $Debug      = $False
-
-# -----------------------------------------------------------------------------
-# Temp Globals
-# -----------------------------------------------------------------------------
-$Version  = @{}
-$Version  += @{ 'Package' = '2.16.4.13' }
-$Version  += @{ 'Display' = '2.16.4+-jp-13' } 
-
-$Archive  = @{}
-$Archive += @{ 'URL1' = "https://dotsrc.dl.osdn.net/osdn/winmerge-jp/72291/winmerge-2.16.4-jp-13-x64-exe.zip" } 
-$Archive += @{ 'TargetDir1'  = 'WinMerge64' }
-$Archive += @{ 'ExtractDir1' = 'WinMerge' }
-$Archive += @{ 'URL2' = "https://dotsrc.dl.osdn.net/osdn/winmerge-jp/72291/winmerge-2.16.4-jp-13-exe.zip" } 
-$Archive += @{ 'TargetDir2'  = 'WinMerge' }
-$Archive += @{ 'ExtractDir2' = 'WinMerge' }
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -30,6 +21,7 @@ Function Debug () {
   Write-Host $Message
 }
 
+# -----------------------------------------------------------------------------
 Function Parse-Ini {
   param (
      $IniFile
@@ -125,7 +117,7 @@ Function Update-Appinfo-Item() {
   )
   If (Test-Path $IniFile) {
     $Content = (Get-Content $IniFile)
-    $Content -replace $Match,$Replace | Out-File -FilePath $IniFile
+    $Content -replace $Match, $Replace | Out-File -FilePath $IniFile
   }
 }
 
@@ -135,16 +127,16 @@ Function Update-Appinfo() {
   Update-Appinfo-Item `
     -IniFile $AppInfoIni `
     -Match '^PackageVersion\s*=.*' `
-    -Replace "PackageVersion=$Version['Package']"
+    -Replace "PackageVersion=$($Version['Package'])"
   Update-Appinfo-Item `
     -IniFile $AppInfoIni `
     -Match '^DisplayVersion\s*=.*' `
-    -Replace "DisplayVersion=$Version['Display']"
+    -Replace "DisplayVersion=$($Version['Display'])"
 }
 
 # -----------------------------------------------------------------------------
 Function Update-Application() {
-  $Version = (Fetch-Section 'Archive')
+  $Archive = (Fetch-Section 'Archive')
   $Position = 1
   While ($True) {
     If (-Not ($Archive.ContainsKey("URL$Position"))) {
@@ -152,9 +144,43 @@ Function Update-Application() {
     } 
     Update-ZIP `
       -URL $Archive["URL$Position"] `
-      -TargetDir $Archive["TargetDir1$Position"] `
+      -TargetDir $Archive["TargetDir$Position"] `
       -ExtractDir $Archive["ExtractDir$Position"] 
     $Position += 1
+  }
+}
+
+# -----------------------------------------------------------------------------
+Function Windows-Path() {
+  param( [string] $Path )
+  $Path = $Path -replace ".*drive_(.)", '$1:'  
+  $Path = $Path.Replace("/", "\") 
+  return $Path
+}
+
+# -----------------------------------------------------------------------------
+Function Create-Launcher() { 
+  Set-Location $AppRoot
+  $AppPath  = (Get-Location)
+  $Launcher = "..\PortableApps.comLauncher\PortableApps.comLauncherGenerator.exe"
+  If ($IsWindows) { 
+    Invoke-Expression "$Launcher $AppPath"
+  }
+  Else {
+    Invoke-Expression "wine $Launcher $(Windows-Path $AppPath)"
+  }
+}
+
+# -----------------------------------------------------------------------------
+Function Create-Installer() { 
+  Set-Location $AppRoot
+  $AppPath   = (Get-Location)
+  $Installer = "..\PortableApps.comInstaller\PortableApps.comInstaller.exe"
+  If ($IsWindows) { 
+    Invoke-Expression "$Installer $AppPath"
+  }
+  Else {
+    Invoke-Expression "wine $Installer $(Windows-Path $AppPath)"
   }
 }
 
@@ -164,3 +190,5 @@ Function Update-Application() {
 $Config = (Parse-Ini $UpdateIni)
 Update-Application
 Update-Appinfo
+Create-Launcher
+Create-Installer
