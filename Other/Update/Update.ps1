@@ -78,13 +78,30 @@ Function Url-Basename {
 }
 
 # -----------------------------------------------------------------------------
+Function Check-Sum {
+  param(
+    [string] $Checksum,
+    [string] $File
+  )
+  ($Algorithm, $Sum) = $Checksum.Split(':')
+  $Result = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash
+  Debug "Checksum of INI ($Sum) and downloaded file ($Result)"
+  return ($Sum -eq $Result)
+}
+
+# -----------------------------------------------------------------------------
 Function Download-ZIP { 
   param(
-    [string] $URL
+    [string] $URL,
+    [string] $Checksum
   )
   $PathZip = "$PSScriptRoot\$(Url-Basename -URL $URL)"
   If (!(Test-Path $PathZip)) {
     Invoke-WebRequest -Uri $URL -OutFile $PathZip
+  }
+  If (!(Check-Sum -Checksum $Checksum -File $PathZip)) {
+    Debug "Checksum of File $PathZip does not match with '$Checksum'"
+    Exit 1
   }
   return $PathZip
 }
@@ -94,10 +111,11 @@ Function Update-Zip {
   param(
     [string] $URL,
     [string] $TargetDir,
-    [string] $ExtractDir
+    [string] $ExtractDir,
+    [string] $Checksum
   )
   Write-Host $URL
-  $ZipFile    = $(Download-ZIP -URL $URL)
+  $ZipFile    = $(Download-ZIP -URL $URL -Checksum $Checksum)
   $TargetPath = "$AppRoot\App\$TargetDir"
   Expand-Archive -LiteralPath $ZipFile -DestinationPath $PSScriptRoot -Force
   If (Test-Path $TargetPath) {
@@ -145,7 +163,8 @@ Function Update-Application() {
     Update-ZIP `
       -URL $Archive["URL$Position"] `
       -TargetDir $Archive["TargetDir$Position"] `
-      -ExtractDir $Archive["ExtractDir$Position"] 
+      -ExtractDir $Archive["ExtractDir$Position"] `
+      -Checksum $Archive["Checksum$Position"]
     $Position += 1
   }
 }
@@ -201,4 +220,3 @@ Update-Application
 Update-Appinfo
 Create-Launcher
 Create-Installer
-
