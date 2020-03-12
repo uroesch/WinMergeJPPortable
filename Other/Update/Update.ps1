@@ -97,12 +97,14 @@ Function Download-ZIP {
   )
   $PathZip = "$PSScriptRoot\$(Url-Basename -URL $URL)"
   If (!(Test-Path $PathZip)) {
+    Debug "Downloading file from '$URL'"
     Invoke-WebRequest -Uri $URL -OutFile $PathZip
   }
   If (!(Check-Sum -Checksum $Checksum -File $PathZip)) {
     Debug "Checksum of File $PathZip does not match with '$Checksum'"
     Exit 1
   }
+  Debug "Downloaded ZIP file '$PathZip'"
   return $PathZip
 }
 
@@ -114,7 +116,6 @@ Function Update-Zip {
     [string] $ExtractDir,
     [string] $Checksum
   )
-  Write-Host $URL
   $ZipFile    = $(Download-ZIP -URL $URL -Checksum $Checksum)
   $TargetPath = "$AppRoot\App\$TargetDir"
   Expand-Archive -LiteralPath $ZipFile -DestinationPath $PSScriptRoot -Force
@@ -122,7 +123,9 @@ Function Update-Zip {
     Write-Output "Removing $TargetPath"
     Remove-Item -Path $TargetPath -Force -Recurse
   }
+  Debug "Move $ExtractDir to $TargetPath"
   Move-Item -Path $PSScriptRoot\$ExtractDir -Destination $TargetPath -Force
+  Debug "Cleanup $ZipFile"
   Remove-Item $ZipFile
 }
 
@@ -187,7 +190,7 @@ Function Create-Launcher() {
     Invoke-Expression "wine $Launcher /s $(Windows-Path $AppPath)"
   }
   Else {
-    Debug "Running Launcher: wine $Launcher AppPath"
+    Debug "Running Launcher: $Launcher AppPath"
     Invoke-Expression "$Launcher $AppPath"
   }
   Write-FileSystemCache $AppPath.Drive.Name
