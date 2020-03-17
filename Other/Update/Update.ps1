@@ -6,12 +6,66 @@
 # -----------------------------------------------------------------------------
 # Globals 
 # -----------------------------------------------------------------------------
-$Version    = "0.0.3-alpha"
-$AppRoot    = "$PSScriptRoot\..\.."
-$AppInfoDir = "$AppRoot\App\AppInfo"
-$AppInfoIni = "$AppInfoDir\appinfo.ini"
-$UpdateIni  = "$AppInfoDir\update.ini"
-$Debug      = $True
+$Version        = "0.0.5-alpha"
+$AppRoot        = "$PSScriptRoot\..\.."
+$AppInfoDir     = "$AppRoot\App\AppInfo"
+$AppInfoIni     = "$AppInfoDir\appinfo.ini"
+$UpdateIni      = "$AppInfoDir\update.ini"
+$ExtractPath    = '__Extract__'
+$Debug          = $True
+
+# -----------------------------------------------------------------------------
+# Classes
+# -----------------------------------------------------------------------------
+Class Download {
+  [string] $URL
+  [string] $ExtractName
+  [string] $TargetName
+  [string] $Checksum
+
+  Download(
+    [string] $u,
+    [string] $en,
+    [string] $tn,
+    [string] $c
+  ){
+    $this.URL         = $u
+    $this.ExtractName = $en
+    $this.TargetName  = $tn
+    $this.Checksum    = $c
+  }
+
+  [string] Basename() {
+    $Elements = $this.URL.split('/')
+    $Basename = $Elements[$($Elements.Length-1)]
+    return $Basename
+  }
+
+  [string] ExtractTo() { 
+    # If Extract name is empty the downloaded archive has all files 
+    # placed in the root of the archive. In that case we use the
+    # TargetName and and attach it to the script location
+    If ($this.ExtractName -eq "") {
+      return "$PSScriptRoot\$($this.TargetName)" 
+    }
+    return "$PSScriptRoot"
+  }
+
+  [string] MoveFrom() {
+    If ($this.ExtractName -eq "") {
+      return "$PSScriptRoot\$($this.TargetName)" 
+    }
+    return "$PSScriptRoot\$($this.ExtractName)"
+  }
+
+  [string] MoveTo() {
+    return "$PSScriptRoot\..\..\App\$($this.TargetName)"
+  }
+
+  [string] OutFile() {
+    return "$PSScriptRoot\$($this.Basename())" 
+  }
+}
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -72,16 +126,6 @@ Function Fetch-Section() {
 } 
 
 # -----------------------------------------------------------------------------
-Function Url-Basename {
-  param(
-    [string] $URL
-  )
-  $Elements = $URL.split('/')
-  $Basename = $Elements[$($Elements.Length-1)]
-  return $Basename
-}
-
-# -----------------------------------------------------------------------------
 Function Check-Sum {
   param(
     [string] $Checksum,
@@ -94,54 +138,57 @@ Function Check-Sum {
 }
 
 # -----------------------------------------------------------------------------
-Function Download-Release { 
+Function Download-Release {
   param(
-    [string] $URL,
-    [string] $Checksum
+    [object] $Download
   )
-  $DownloadPath = "$PSScriptRoot\$(Url-Basename -URL $URL)"
-  If (!(Test-Path $DownloadPath)) {
-    Debug "Downloading file from '$URL'"
-    Invoke-WebRequest -Uri $URL -OutFile $DownloadPath
+  If (!(Test-Path $Download.OutFile())) {
+    Debug "Downloading file from '$($Download.URL)"
+    Invoke-WebRequest -Uri $Download.URL -OutFile $Download.OutFile()
   }
-  If (!(Check-Sum -Checksum $Checksum -File $DownloadPath)) {
+  If (!(Check-Sum -Checksum $Download.Checksum -File $Download.OutFile())) {
     Debug "Checksum of File $DownloadPath does not match with '$Checksum'"
     Exit 1
   }
-  Debug "Downloaded file '$DownloadPath'"
-  return $DownloadPath
+  Debug "Downloaded file '$($Download.OutFile())'"
 }
 
 # -----------------------------------------------------------------------------
 Function Expand-Download {
   param(
-    [string] $ArchiveFile
+    [object] $Download
   )
-  Expand-Archive -LiteralPath $ArchiveFile `
-    -DestinationPath $PSScriptRoot -Force
+  If (!(Test-Path $Download.ExtractTo())) {
+    New-Item -Path $Download.ExtractTo() -Type "directory" 
+  }
+  Expand-Archive -LiteralPath $Download.OutFile() `
+    -DestinationPath $Download.ExtractTo() -Force
 }
 
 # -----------------------------------------------------------------------------
 Function Update-Release {
   param(
-    [string] $URL,
-    [string] $TargetName,
-    [string] $ExtractName,
-    [string] $Checksum
+    [object] $Download
   )
-  $ReleaseFile = $(Download-Release -URL $URL -Checksum $Checksum)
-  $TargetPath = "$AppRoot\App\$TargetName"
-  Switch -regex ($ReleaseFile) {
-    '\.[Zz][Ii][Pp]$' { Expand-Download -ArchiveFile $ReleaseFile; break }
+  Download-Release -Download $Download
+  Switch -regex ($Download.Basename()) {
+    '\.[Zz][Ii][Pp]$' {
+      Expand-Download -Download $Download
+      break 
+    }
   }
-  If (Test-Path $TargetPath) {
-    Debug "Removing $TargetPath"
-    Remove-Item -Path $TargetPath -Force -Recurse
+  If (Test-Path $Download.MoveTo()) {
+    Debug "Removing $($Download.MoveTo())"
+    Remove-Item -Path $Download.MoveTo() `
+      -Force `
+      -Recurse
   }
-  Move-Item -Path $PSScriptRoot\$ExtractName -Destination $TargetPath -Force
-  If (Test-Path $ReleaseFile) { 
-    Debug "Cleanup $ReleaseFile"
-    Remove-Item $ReleaseFile 
+  Move-Item -Path $Download.MoveFrom() `
+    -Destination $Download.MoveTo() `
+    -Force
+  If (Test-Path $Download.OutFile()) {
+    Debug "Cleanup $($Download.OutFile())"
+    Remove-Item $Download.OutFile()
   }
 }
 
@@ -153,6 +200,7 @@ Function Update-Appinfo-Item() {
     [string] $Replace
   )
   If (Test-Path $IniFile) {
+    Debug "Updating INI File $IniFile with $Match -> $Replace" 
     $Content = (Get-Content $IniFile)
     $Content -replace $Match, $Replace | Out-File -FilePath $IniFile
   }
@@ -178,12 +226,14 @@ Function Update-Application() {
   While ($True) {
     If (-Not ($Archive.ContainsKey("URL$Position"))) {
       Break
-    } 
-    Update-Release `
-      -URL $Archive["URL$Position"] `
-      -TargetName $Archive["TargetName$Position"] `
-      -ExtractName $Archive["ExtractName$Position"] `
-      -Checksum $Archive["Checksum$Position"]
+    }
+    $Download  = [Download]::new(
+      $Archive["URL$Position"], 
+      $Archive["ExtractName$Position"],
+      $Archive["TargetName$Position"], 
+      $Archive["Checksum$Position"]
+    )
+    Update-Release -Download $Download 
     $Position += 1
   }
 }
