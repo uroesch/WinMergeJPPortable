@@ -1,3 +1,4 @@
-App/WinMerge*
-Data/
 *.exe
+App/WinMerge*
+Data
+Download
