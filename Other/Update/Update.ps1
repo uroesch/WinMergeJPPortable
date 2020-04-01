@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-$Version        = "0.0.15-alpha"
+$Version        = "0.0.16-alpha"
 $AppRoot        = $(Convert-Path "$PSScriptRoot\..\..")
 $AppDir         = "$AppRoot\App"
 $AppInfoDir     = "$AppDir\AppInfo"
@@ -223,7 +223,8 @@ Function Download-File {
       -Destination $Download.OutFile()
   }
   If (!(Check-Sum -Download $Download)) {
-    Debug fatal "Checksum for $($Download.OutFile()) does not match '$Checksum'"
+    Debug fatal "Checksum for $($Download.OutFile()) " `
+      "does not match '$($Donwload.Checksum)'"
     Exit 1
   }
   Debug info "Downloaded file '$($Download.OutFile())'"
@@ -411,20 +412,23 @@ Function Invoke-Helper() {
   $AppPath = (Get-Location)
 
   Switch (Is-Unix) {
-    $True   { $Prefix = "timeout $Timeout wine"; break }
-    default { $Prefix = '' }
+    $True   { 
+      $Arguments = "$Command $(Windows-Path $AppPath)"
+      $Command   = "wine" 
+      break 
+    }
+    default { 
+      $Arguments = Windows-Path $AppPath
+    }
   }
 
-  If ($Sleep) {
-    Debug info "Waiting for filsystem cache to catch up"
-    Start-Sleep $Sleep
-  }
+  #If ($Sleep) {
+  #  Debug info "Waiting for filsystem cache to catch up"
+  #  Start-Sleep $Sleep
+  #}
 
-  Debug info "Run PA Command $Prefix $Command $(Windows-Path $AppPath)"
-  Invoke-Expression "$Prefix $Command $(Windows-Path $AppPath)"
-  If (!(Is-Unix)) { 
-    Wait-Process -Name $(Get-Item $Command).Basename -Timeout $Timeout
-  }
+  Debug info "Run PA $Command $Arguments"
+  Start-Process $Command -ArgumentList $Arguments -NoNewWindow -Wait
 }
 
 # -----------------------------------------------------------------------------

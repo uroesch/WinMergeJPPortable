@@ -18,6 +18,19 @@ are included for maximum performance on every PC.
 ## Runtime dependencies
 * 32-bit or 64-bit version of Windows.
 
+
+## Support matrix
+
+| OS              | 32-bit             | 64-bit              | 
+|-----------------|:------------------:|:-------------------:|
+| Windows XP      | ![fs][fs]          | ![nd][nd]           | 
+| Windows Vista   | ![fs][fs]          | ![fs][fs]           | 
+| Windows 7       | ![fs][fs]          | ![fs][fs]           |  
+| Windows 8       | ![fs][fs]          | ![fs][fs]           |  
+| Windows 10      | ![fs][fs]          | ![fs][fs]           |
+
+Legend: ![ns][ns] not supported;  ![nd][nd] no data; ![ps][ps] supported but not verified; ![fs][fs] verified;`
+
 ## Status 
 This PortableApps project is in beta stage. 
 
@@ -40,3 +53,7 @@ To build the installer run the following command in the root of the git reposito
 ```
 powershell Other/Update/Update.ps1
 ```
+[nd]: Other/Icons/no_data.svg
+[ns]: Other/Icons/no_support.svg
+[ps]: Other/Icons/probably_supported.svg
+[fs]: Other/Icons/full_support.svg
