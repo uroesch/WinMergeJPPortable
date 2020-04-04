@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Globals
 # -----------------------------------------------------------------------------
-$Version        = "0.0.16-alpha"
+$Version        = "0.0.17-alpha"
 $AppRoot        = $(Convert-Path "$PSScriptRoot\..\..")
 $AppDir         = "$AppRoot\App"
 $AppInfoDir     = "$AppDir\AppInfo"
@@ -218,7 +218,7 @@ Function Download-File {
     Invoke-WebRequest -Uri $Download.URL `
       -OutFile "$($Download.OutFile()).part"
 
-    Debug info "Move file $($Download.OutFile).part to $($Download.OutFile())"
+    Debug info "Move file $($Download.OutFile()).part to $($Download.OutFile())"
     Move-Item -Path "$($Download.OutFile()).part" `
       -Destination $Download.OutFile()
   }
@@ -352,7 +352,7 @@ Function Fix-Path() {
   # Convert Path only Works on Existing Directories :(
   param( [string] $Path )
   Switch (Is-Unix) {
-    $True { 
+    $True {
       $From = '\'
       $To   = '/'
       break;
@@ -412,12 +412,12 @@ Function Invoke-Helper() {
   $AppPath = (Get-Location)
 
   Switch (Is-Unix) {
-    $True   { 
+    $True   {
       $Arguments = "$Command $(Windows-Path $AppPath)"
-      $Command   = "wine" 
-      break 
+      $Command   = "wine"
+      break
     }
-    default { 
+    default {
       $Arguments = Windows-Path $AppPath
     }
   }
