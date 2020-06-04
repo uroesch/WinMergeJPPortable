@@ -1,6 +1,7 @@
 [![Build](https://github.com/uroesch/WinMergeJPPortable/workflows/build-package/badge.svg)](https://github.com/uroesch/WinMergeJPPortable/actions?query=workflow%3Abuild-package)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/uroesch/WinMergeJPPortable?include_prereleases)](https://github.com/uroesch/WinMergeJPPortable/releases)
 [![Runs on](https://img.shields.io/badge/runs%20on-Win64%20%26%20Win32-blue)](#runtime-dependencies)
+![GitHub All Releases](https://img.shields.io/github/downloads/uroesch/WinMergeJPPortable/total?style=flat)
 
 # WinMergeJP Portable for PortableApps.com
 
