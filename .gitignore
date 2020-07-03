@@ -1,4 +1,5 @@
 *.exe
 App/WinMerge*
 Data
+App/AppInfo/pac_installer_log.ini
 Download
