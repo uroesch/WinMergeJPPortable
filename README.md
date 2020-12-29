@@ -33,10 +33,7 @@ are included for maximum performance on every PC.
 Legend: ![ns][ns] not supported;  ![nd][nd] no data; ![ps][ps] supported but not verified; ![fs][fs] verified;`
 
 ## Status 
-This PortableApps project is in beta stage. 
-
-## Todo
-- [ ] Documentation
+This PortableApps project has been tested when installed locally and on a cloud drive (Box).
 
 <!-- Start include INSTALL.md -->
 ## Installation
