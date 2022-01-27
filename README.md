@@ -24,8 +24,8 @@ are included for maximum performance on every PC.
 
 | OS              | 32-bit             | 64-bit              | 
 |-----------------|:------------------:|:-------------------:|
-| ReactOS 0.4.14  | ![nd][nd]          | ![nd][nd]           |
-| ReactOS 0.4.15  | ![nd][nd]          | ![nd][nd]           |
+| ReactOS 0.4.14  | ![fs][fs]          | ![na][na]           |
+| ReactOS 0.4.15  | ![fs][fs]          | ![fs][fs]           |
 | Windows XP      | ![fs][fs]          | ![nd][nd]           | 
 | Windows Vista   | ![fs][fs]          | ![fs][fs]           | 
 | Windows 7       | ![fs][fs]          | ![fs][fs]           |  
