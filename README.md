@@ -10,11 +10,11 @@
 
 [WinMergeJP](https://winmergejp.bitbucket.io/)  is an Open Source visual text
 file differencing and merging tool for Win32 platforms. It is highly useful
-for determing what has changed between project versions, and then merging 
-changes between versions. It features visual differencing and merging of text 
-files, a flexible editor with syntax highlighting, line numbers and word-wrap 
-and handles DOS, UNIX and MAC text file formats. It also includes full support 
-for archives with the bundled 7-Zip plugin. Both the 32-bit and 64-bit versions 
+for determing what has changed between project versions, and then merging
+changes between versions. It features visual differencing and merging of text
+files, a flexible editor with syntax highlighting, line numbers and word-wrap
+and handles DOS, UNIX and MAC text file formats. It also includes full support
+for archives with the bundled 7-Zip plugin. Both the 32-bit and 64-bit versions
 are included for maximum performance on every PC.
 
 ## Runtime dependencies
@@ -23,20 +23,20 @@ are included for maximum performance on every PC.
 
 ## Support matrix
 
-| OS              | 32-bit             | 64-bit              | 
+| OS              | 32-bit             | 64-bit              |
 |-----------------|:------------------:|:-------------------:|
 | ReactOS 0.4.14  | ![fs][fs]          | ![na][na]           |
 | ReactOS 0.4.15  | ![fs][fs]          | ![fs][fs]           |
-| Windows XP      | ![fs][fs]          | ![nd][nd]           | 
-| Windows Vista   | ![fs][fs]          | ![fs][fs]           | 
-| Windows 7       | ![fs][fs]          | ![fs][fs]           |  
-| Windows 8       | ![fs][fs]          | ![fs][fs]           |  
+| Windows XP      | ![fs][fs]          | ![nd][nd]           |
+| Windows Vista   | ![fs][fs]          | ![fs][fs]           |
+| Windows 7       | ![fs][fs]          | ![fs][fs]           |
+| Windows 8       | ![fs][fs]          | ![fs][fs]           |
 | Windows 10      | ![fs][fs]          | ![fs][fs]           |
 | Windows 11      | ![na][na]          | ![fs][fs]           |
 
 Legend: ![ns][ns] not supported; ![na][na] not applicable; ![nd][nd] no data; ![ps][ps] supported but not verified; ![fs][fs] verified;
 
-## Status 
+## Status
 This PortableApps project has been tested when installed locally and on a cloud drive (Box).
 
 <!-- Start include INSTALL.md -->
